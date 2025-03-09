@@ -1,0 +1,117 @@
+# Author: Kornelius
+# Title: Infectious Disease Modelling
+# Update: 09 March 2025
+
+
+# Load package ------------------------------------------------------------
+pacman::p_load(
+  rio,          # File import
+  here,         # File locator
+  skimr,        # get overview of data
+  tidyverse,    # data management + ggplot2 graphics, 
+  gtsummary,    # summary statistics and tests
+  rstatix,      # statistics
+  corrr,        # correlation analayis for numeric variables
+  janitor,      # adding totals and percents to tables
+  flextable,     # converting tables to HTML
+  sf,            # spatial data
+  SpatialEpi,
+  dplyr,
+  tidyverse,
+  ggplot2
+)
+
+library(dplyr)
+# Section 1. Growth Rate  -------------------------------------------------
+# Growt rate : During the early stages of epidemic, the number of infectious 
+# individuals increase at anproximately constant rate 
+# Growt rate formula = I(t) =I(0)e^rt
+
+#Example of calculating R0 from growt rate
+
+#Population
+N <-c(196943)
+# growt rate during the first and second waves
+r <-c(0.367) # growth rate of infectiousness in the first wave (^)
+r_prime <-c(0.104) #growth rate of infectiousness in the second wave (^') 
+
+#Infectious individuals during first and second weeks
+I <-c(4567) # Infectious individuals in the first wave
+I_prime <-c(19484) # Infectious individuals in the second wave
+
+#Duration of infectiousness in the first and second waves
+D <- c(2) # D first wave 
+D_prime <-c(2)  # D' second wave
+
+
+# Calculate the Reproduction Number using the growth rate -----------------
+# R0 = Rn/S; where Rn = 1+rD
+
+Rn <-1+r*D
+print(Rn)
+
+Rn_prime <-1+r_prime*D_prime
+print(Rn_prime)
+
+#Let assume the 70% population is susceptible at the first wave of the epidemic
+R0 <-Rn/0.7
+print(R0)
+
+#Assume that 50% of the population remains susceptible during the second wave of the epidemic 
+R0_prime <-Rn_prime/0.5
+print(R0_prime)
+
+# Calculate the Reproduction Number using the growth rate -----------------
+# R0 = Rn/S; where Rn = (1+rD)(1+rD')
+
+Rn1 <-Rn^2
+print(Rn1)
+
+Rn_prime1 <-Rn_prime^2
+print(Rn_prime1)
+
+#Calculate the R0 in final epidemic size 
+# The formula; R0= ln(Sf)-ln(S0)/Sf-S0 where S0= proportion of susceptible population at the start =70% 
+# and Sf refers to proportion of susceptible population at the end of epidemic (2nd wave)= 50%
+
+S0<-c(0.7) # 70% population is susceptible in the first wave
+S_prime<-c(0.5) # 50% population is susceptible in the second wave
+
+# R0 final epidemic size of the first wave
+sf_first_wave <- S0 - I / N  # Define sf_first_wave
+
+R0_first_wave_final <- (log(sf_first_wave) - log(S0)) / (sf_first_wave - S0)
+
+print(R0_first_wave_final) 
+
+#R0 final epidemic of the second wave
+sf_second_wave <- S_prime - I_prime / N  # Define sf_first_wave
+
+R0_second_wave_final <- (log(sf_second_wave) - log(S_prime)) / (sf_second_wave - S_prime)
+
+print(R0_second_wave_final) 
+
+#Create table
+library(ggplot2)
+
+library(gridExtra)
+library(grid)
+
+# Create a dataframe for the table
+tab <- data.frame(
+  Metric = c("Rn", "Rn′", "R0", "R0′", "Rn1", "Rn′1", "R0_final_1st_wave", "R0_final_2nd_wave"),
+  Value = as.numeric(c(Rn, Rn_prime, R0, R0_prime, Rn1, Rn_prime1, R0_first_wave_final, R0_second_wave_final))
+)
+
+# Ensure no NA values
+tab <- tab %>% mutate(Value = ifelse(is.na(Value), 0, Value))
+
+# Generate flextable
+summary_table <- flextable(tab) %>%
+  theme_vanilla() %>%  # Alternative theme
+  set_table_properties(layout = "autofit")  # Ensure autofit works
+
+# Display the table
+summary_table
+
+rmarkdown::render("your_file.Rmd")
