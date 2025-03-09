@@ -25,15 +25,15 @@ library(dplyr)
 # Section 1. Growth Rate  -------------------------------------------------
 # Growt rate : During the early stages of epidemic, the number of infectious 
 # individuals increase at anproximately constant rate 
-# Growt rate formula = I(t) =I(0)e^rt
+# Growt rate formula = I(t) =I(0)e^tau(t)
 
 #Example of calculating R0 from growt rate
 
 #Population
 N <-c(196943)
 # growt rate during the first and second waves
-r <-c(0.367) # growth rate of infectiousness in the first wave (^)
-r_prime <-c(0.104) #growth rate of infectiousness in the second wave (^') 
+tau <-c(0.367) # growth rate of infectiousness in the first wave (^)
+tau_prime <-c(0.104) #growth rate of infectiousness in the second wave (^') 
 
 #Infectious individuals during first and second weeks
 I <-c(4567) # Infectious individuals in the first wave
